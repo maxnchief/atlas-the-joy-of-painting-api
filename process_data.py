@@ -106,6 +106,7 @@ def process_data_files():
     # Read broadcast dates
     print("Reading broadcast dates...")
     broadcast_data = {}
+    broadcast_lookup = {}  # normalized title -> original title
     
     try:
         with open(f"{base_path}/brodcast_date", 'r', encoding='utf-8') as f:
@@ -113,10 +114,14 @@ def process_data_files():
                 if line.strip():
                     title, date, guest = parse_broadcast_date(line)
                     if title:
-                        broadcast_data[title] = {
+                        normalized = normalize_title(title)
+                        broadcast_data[normalized] = {
                             'date': date,
-                            'guest': guest
+                            'guest': guest,
+                            'original_title': title
                         }
+                        broadcast_lookup[normalized] = title
+                        broadcast_lookup[normalized] = title
     except Exception as e:
         print(f"Error reading broadcast dates: {e}")
         return
@@ -126,21 +131,25 @@ def process_data_files():
     # Read color palette data
     print("Reading color palette data...")
     color_data = {}
+    color_lookup = {}  # normalized title -> original title
     
     try:
         with open(f"{base_path}/color_palette", 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 title = row['painting_title']
-                color_data[title] = {
+                normalized = normalize_title(title)
+                color_data[normalized] = {
                     'painting_index': row['painting_index'],
                     'img_src': row['img_src'],
                     'season': int(row['season']),
                     'episode': int(row['episode']),
                     'num_colors': int(row['num_colors']),
                     'youtube_src': row['youtube_src'],
-                    'colors': parse_color_list(row['colors'])
+                    'colors': parse_color_list(row['colors']),
+                    'original_title': title
                 }
+                color_lookup[normalized] = title
     except Exception as e:
         print(f"Error reading color palette: {e}")
         return
@@ -150,6 +159,7 @@ def process_data_files():
     # Read subject matter data
     print("Reading subject matter data...")
     subject_data = {}
+    subject_lookup = {}  # normalized title -> original title
     
     try:
         with open(f"{base_path}/subject_matter", 'r', encoding='utf-8') as f:
@@ -157,13 +167,16 @@ def process_data_files():
             for row in reader:
                 episode_code = row['EPISODE']
                 title = row['TITLE'].strip('"')
+                normalized = normalize_title(title)
                 
                 # Get elements where value is 1
                 elements = [k for k, v in row.items() if k not in ['EPISODE', 'TITLE'] and v == '1']
-                subject_data[title] = {
+                subject_data[normalized] = {
                     'episode_code': episode_code,
-                    'elements': elements
+                    'elements': elements,
+                    'original_title': title
                 }
+                subject_lookup[normalized] = title
     except Exception as e:
         print(f"Error reading subject matter: {e}")
         return
@@ -179,13 +192,14 @@ def process_data_files():
     
     episode_id = 1
     
-    # Match data across all three sources
+    # Match data across all three sources using normalized titles
     processed_count = 0
-    for title in color_data.keys():
-        color_info = color_data[title]
-        broadcast_info = broadcast_data.get(title, {})
-        subject_info = subject_data.get(title, {})
+    for normalized_title in color_data.keys():
+        color_info = color_data[normalized_title]
+        broadcast_info = broadcast_data.get(normalized_title, {})
+        subject_info = subject_data.get(normalized_title, {})
         
+        original_title = color_info['original_title']
         episode_code = generate_episode_code(color_info['season'], color_info['episode'])
         
         # Prepare episode insert
@@ -202,7 +216,7 @@ def process_data_files():
         else:
             special_guest_sql = 'NULL'
         
-        clean_title_text = clean_title(title)
+        clean_title_text = clean_title(original_title)
         img_src_sql = f"'{color_info['img_src']}'" if color_info['img_src'] else 'NULL'
         youtube_src_sql = f"'{color_info['youtube_src']}'" if color_info['youtube_src'] else 'NULL'
         

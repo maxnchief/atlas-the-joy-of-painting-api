@@ -67,7 +67,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (21, 2, 8, 'S02E08', 'Reflections', '1983-10-19', 276, 'https://www.twoinchbrush.com/images/painting276.png', 'https://www.youtube.com/embed/0FYfo94qefg', 12, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (22, 2, 9, 'S02E09', 'Black and White Seascape', NULL, 277, 'https://www.twoinchbrush.com/images/painting277.png', 'https://www.youtube.com/embed/PMDyPrE0puo', 12, NULL);
+VALUES (22, 2, 9, 'S02E09', 'Black and White Seascape', '1983-10-26', 277, 'https://www.twoinchbrush.com/images/painting277.png', 'https://www.youtube.com/embed/PMDyPrE0puo', 12, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (23, 2, 10, 'S02E10', 'Lazy River', '1983-11-02', 278, 'https://www.twoinchbrush.com/images/painting278.png', 'https://www.youtube.com/embed/BW2wKKFvH1g', 12, NULL);
@@ -415,7 +415,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (137, 11, 9, 'S11E09', 'Winter Barn', '1987-02-25', 158, 'https://www.twoinchbrush.com/images/painting158.png', 'https://www.youtube.com/embed/_xkn0ceDreo', 6, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (138, 11, 10, 'S11E10', 'Sunset over the Waves', NULL, 159, 'https://www.twoinchbrush.com/images/painting159.png', 'https://www.youtube.com/embed/c4b_B2F1eZg', 10, NULL);
+VALUES (138, 11, 10, 'S11E10', 'Sunset over the Waves', '1987-03-04', 159, 'https://www.twoinchbrush.com/images/painting159.png', 'https://www.youtube.com/embed/c4b_B2F1eZg', 10, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (139, 11, 11, 'S11E11', 'Golden Glow', '1987-03-11', 160, 'https://www.twoinchbrush.com/images/painting160.png', 'https://www.youtube.com/embed/aA8RhtaWACA', 8, NULL);
@@ -643,7 +643,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (213, 17, 7, 'S17E07', 'Spectacular Waterfall', '1989-02-15', 77, 'https://www.twoinchbrush.com/images/painting77.png', 'https://www.youtube.com/embed/nK-HebXL2uw', 15, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (214, 17, 8, 'S17E08', 'View from the Park', NULL, 78, 'https://www.twoinchbrush.com/images/painting78.png', 'https://www.youtube.com/embed/Q4n90jsOUtY', 13, NULL);
+VALUES (214, 17, 8, 'S17E08', 'View from the Park', '1989-02-22', 78, 'https://www.twoinchbrush.com/images/painting78.png', 'https://www.youtube.com/embed/Q4n90jsOUtY', 13, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (215, 17, 9, 'S17E09', 'Lake View', '1989-03-01', 79, 'https://www.twoinchbrush.com/images/painting79.png', 'https://www.youtube.com/embed/07acfzBaoa0', 12, NULL);
@@ -871,7 +871,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (289, 23, 5, 'S23E05', 'Quiet Cove', '1991-10-01', 299, 'https://www.twoinchbrush.com/images/painting299.png', 'https://www.youtube.com/embed/cR9hTbSomx4', 11, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (290, 23, 6, 'S23E06', 'Rivers Peace', NULL, 300, 'https://www.twoinchbrush.com/images/painting300.png', 'https://www.youtube.com/embed/flCWS9LB4Ks', 13, NULL);
+VALUES (290, 23, 6, 'S23E06', 'Rivers Peace', '1991-10-08', 300, 'https://www.twoinchbrush.com/images/painting300.png', 'https://www.youtube.com/embed/flCWS9LB4Ks', 13, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (291, 23, 7, 'S23E07', 'At Dawn''s Light', '1991-10-15', 301, 'https://www.twoinchbrush.com/images/painting301.png', 'https://www.youtube.com/embed/HFdTxqEznIk', 9, NULL);
@@ -880,7 +880,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (292, 23, 8, 'S23E08', 'Valley Waterfall', '1991-10-22', 302, 'https://www.twoinchbrush.com/images/painting302.png', 'https://www.youtube.com/embed/VYcsYzzRae4', 15, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (293, 23, 9, 'S23E09', 'Toward Days End', NULL, 303, 'https://www.twoinchbrush.com/images/painting303.png', 'https://www.youtube.com/embed/cFi_fJl40BA', 13, NULL);
+VALUES (293, 23, 9, 'S23E09', 'Toward Days End', '1991-10-29', 303, 'https://www.twoinchbrush.com/images/painting303.png', 'https://www.youtube.com/embed/cFi_fJl40BA', 13, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (294, 23, 10, 'S23E10', 'Falls in the Glen', '1991-11-05', 304, 'https://www.twoinchbrush.com/images/painting304.png', 'https://www.youtube.com/embed/txAtX-VyVNc', 14, NULL);
@@ -1003,7 +1003,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (333, 26, 10, 'S26E10', 'Purple Mountain Range', '1993-02-02', 343, 'https://www.twoinchbrush.com/images/painting343.png', 'https://www.youtube.com/embed/nkDA_R-XmqA', 13, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (334, 26, 11, 'S26E11', 'Storm''s A Comin', NULL, 344, 'https://www.twoinchbrush.com/images/painting344.png', 'https://www.youtube.com/embed/EHD9u-lo2wc', 10, NULL);
+VALUES (334, 26, 11, 'S26E11', 'Storm''s A Comin', '1993-02-09', 344, 'https://www.twoinchbrush.com/images/painting344.png', 'https://www.youtube.com/embed/EHD9u-lo2wc', 10, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (335, 26, 12, 'S26E12', 'Sunset Aglow', '1993-02-16', 345, 'https://www.twoinchbrush.com/images/painting345.png', 'https://www.youtube.com/embed/gMEZp47VKC0', 12, NULL);
@@ -1183,7 +1183,7 @@ INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcas
 VALUES (393, 31, 5, 'S31E05', 'Cabin in the Hollow', '1994-03-22', 403, 'https://www.twoinchbrush.com/images/painting403.png', 'https://www.youtube.com/embed/KYlM2zJnNWY', 7, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
-VALUES (394, 31, 6, 'S31E06', 'View from Clear Creek', NULL, 404, 'https://www.twoinchbrush.com/images/painting404.png', 'https://www.youtube.com/embed/TLX1bmS8wBE', 13, NULL);
+VALUES (394, 31, 6, 'S31E06', 'View from Clear Creek', '1994-03-29', 404, 'https://www.twoinchbrush.com/images/painting404.png', 'https://www.youtube.com/embed/TLX1bmS8wBE', 13, NULL);
 
 INSERT INTO episodes (episode_id, season, episode, episode_code, title, broadcast_date, painting_index, img_src, youtube_src, num_colors, special_guest)
 VALUES (395, 31, 7, 'S31E07', 'Bridge to Autumn', '1994-04-05', 405, 'https://www.twoinchbrush.com/images/painting405.png', 'https://www.youtube.com/embed/ReENCTH7MYI', 11, NULL);
