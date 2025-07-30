@@ -1,0 +1,18 @@
+The Joy of Painting Data Processing Report
+==================================================
+
+Total episodes processed: 401
+Total color relationships: 4250
+Total element relationships: 0
+Broadcast dates found: 401
+Color palette entries: 401
+Subject matter entries: 401
+
+Episodes with special guests (7):
+- Ocean Sunrise: Audrey Golden
+- Anatomy of a Wave: Joyce Ortner
+- Contemplative Lady: John Thamm
+- That Time of Year: Steve Ross
+- Mountain Lake Falls: Steve Ross
+- Mountains of Grace: Steve Ross
+- Lake at the Ridge: Steve Ross)
