@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "Joy of Painting API",
+    "description": "Collection for testing The Joy of Painting API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "API Documentation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": ["{{base_url}}"]
+        }
+      }
+    },
+    {
+      "name": "Get All Episodes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"]
+        }
+      }
+    },
+    {
+      "name": "Get Episodes with Pagination",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes?limit=10&offset=0",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Mountain Episodes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/subjects/mountain",
+          "host": ["{{base_url}}"],
+          "path": ["subjects", "mountain"]
+        }
+      }
+    },
+    {
+      "name": "Filter Episodes by Subject",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes?subject=MOUNTAIN,WATERFALL",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"],
+          "query": [
+            {
+              "key": "subject",
+              "value": "MOUNTAIN,WATERFALL"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter Episodes by Season",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes?season=1",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"],
+          "query": [
+            {
+              "key": "season",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter Episodes by Color",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes?color=Titanium White,Prussian Blue",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"],
+          "query": [
+            {
+              "key": "color",
+              "value": "Titanium White,Prussian Blue"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter Episodes by Broadcast Month",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes?month=1",
+          "host": ["{{base_url}}"],
+          "path": ["episodes"],
+          "query": [
+            {
+              "key": "month",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Specific Episode",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes/1",
+          "host": ["{{base_url}}"],
+          "path": ["episodes", "1"]
+        }
+      }
+    },
+    {
+      "name": "Search Episodes by Title",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/episodes/search?q=mountain",
+          "host": ["{{base_url}}"],
+          "path": ["episodes", "search"],
+          "query": [
+            {
+              "key": "q",
+              "value": "mountain"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get All Subject Elements",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/subjects",
+          "host": ["{{base_url}}"],
+          "path": ["subjects"]
+        }
+      }
+    },
+    {
+      "name": "Get All Paint Colors",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/colors",
+          "host": ["{{base_url}}"],
+          "path": ["colors"]
+        }
+      }
+    },
+    {
+      "name": "Get Database Statistics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/stats",
+          "host": ["{{base_url}}"],
+          "path": ["stats"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
