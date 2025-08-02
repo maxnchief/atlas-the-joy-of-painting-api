@@ -7,7 +7,6 @@
 - **Port**: 5432
 - **Database**: joy_of_painting
 - **Username**: joy_user
-- **Password**: joy_painting_2024
 
 ### Connection String
 ```
