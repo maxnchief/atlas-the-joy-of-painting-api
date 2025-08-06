@@ -6,62 +6,88 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 // Database connection
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'joy_of_painting',
+  user: process.env.DB_USER || 'joy_user',
+  password: process.env.DB_PASSWORD || 'joy_painting_2024',
+});
+
+// Test database connection
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('❌ Error acquiring client:', err.stack);
+  } else {
+    console.log('✅ Database connected successfully');
+    release();
+  }
 });
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*'
-}));
+app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ 
+      status: 'healthy', 
+      database: 'connected', 
+      timestamp: new Date().toISOString() 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'unhealthy', 
+      database: 'disconnected', 
+      error: error.message 
+    });
+  }
 });
 
-// Root endpoint with API documentation
+// API Documentation
 app.get('/', (req, res) => {
   res.json({
-    message: 'The Joy of Painting API',
-    version: '1.0.0',
+    message: "🎨 Welcome to The Joy of Painting API!",
+    description: "Filter Bob Ross episodes by subject matter, colors, and broadcast dates",
+    version: "1.0.0",
     endpoints: {
-      'GET /episodes': 'Get all episodes with optional filtering',
-      'GET /episodes/:id': 'Get specific episode by ID',
-      'GET /episodes/search': 'Search episodes by title',
-      'GET /subjects': 'Get all subject elements',
-      'GET /subjects/mountain': 'Get all mountain-related episodes',
-      'GET /colors': 'Get all paint colors',
-      'GET /stats': 'Get database statistics'
+      "GET /episodes": "Get all episodes with optional filtering",
+      "GET /episodes/:id": "Get specific episode by ID",
+      "GET /subjects": "Get all subject elements",
+      "GET /subjects/mountain": "Get all episodes with mountains",
+      "GET /colors": "Get all paint colors",
+      "GET /search?q=query": "Search episodes",
+      "GET /health": "Health check",
+      "GET /stats": "Database statistics"
     },
     filters: {
-      'season': 'Filter by season number',
-      'subject': 'Filter by subject matter (comma-separated)',
-      'color': 'Filter by paint colors (comma-separated)',
-      'month': 'Filter by broadcast month (1-12)',
-      'year': 'Filter by broadcast year'
+      season: "Filter by season number (1-31)",
+      subject: "Filter by subject matter (comma-separated)",
+      color: "Filter by paint colors (comma-separated)", 
+      month: "Filter by broadcast month (1-12)",
+      year: "Filter by broadcast year"
     }
   });
 });
 
-// Get all episodes with optional filtering
+// Get all episodes with filtering
 app.get('/episodes', async (req, res) => {
   try {
     const { season, subject, color, month, year, limit = 50, offset = 0 } = req.query;
     
     let query = `
-      SELECT DISTINCT e.episode_id, e.season, e.episode, e.episode_code, 
-             e.title, e.broadcast_date, e.img_src, e.youtube_src, 
+      SELECT DISTINCT e.episode_id, e.title, e.season, e.episode, e.episode_code, 
+             e.broadcast_date, e.painting_index, e.img_src, e.youtube_src, 
              e.num_colors, e.special_guest,
-             STRING_AGG(DISTINCT se.element_name, ', ') as subjects,
-             STRING_AGG(DISTINCT c.color_name, ', ') as colors
+             ARRAY_AGG(DISTINCT se.element_name) as subject_elements,
+             ARRAY_AGG(DISTINCT c.color_name) as colors
       FROM episodes e
       LEFT JOIN episode_elements ee ON e.episode_id = ee.episode_id
       LEFT JOIN subject_elements se ON ee.element_id = se.element_id
@@ -82,24 +108,14 @@ app.get('/episodes', async (req, res) => {
     if (subject) {
       const subjects = subject.split(',').map(s => s.trim().toUpperCase());
       paramCount++;
-      query += ` AND EXISTS (
-        SELECT 1 FROM episode_elements ee2 
-        JOIN subject_elements se2 ON ee2.element_id = se2.element_id 
-        WHERE ee2.episode_id = e.episode_id 
-        AND se2.element_name = ANY($${paramCount})
-      )`;
+      query += ` AND se.element_name = ANY($${paramCount})`;
       params.push(subjects);
     }
     
     if (color) {
       const colors = color.split(',').map(c => c.trim());
       paramCount++;
-      query += ` AND EXISTS (
-        SELECT 1 FROM episode_colors ec2 
-        JOIN colors c2 ON ec2.color_id = c2.color_id 
-        WHERE ec2.episode_id = e.episode_id 
-        AND c2.color_name = ANY($${paramCount})
-      )`;
+      query += ` AND c.color_name = ANY($${paramCount})`;
       params.push(colors);
     }
     
@@ -115,31 +131,32 @@ app.get('/episodes', async (req, res) => {
       params.push(parseInt(year));
     }
     
-    query += `
-      GROUP BY e.episode_id, e.season, e.episode, e.episode_code, 
-               e.title, e.broadcast_date, e.img_src, e.youtube_src, 
+    query += ` 
+      GROUP BY e.episode_id, e.title, e.season, e.episode, e.episode_code, 
+               e.broadcast_date, e.painting_index, e.img_src, e.youtube_src, 
                e.num_colors, e.special_guest
       ORDER BY e.season, e.episode
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
     `;
     
-    paramCount++;
-    query += ` LIMIT $${paramCount}`;
-    params.push(parseInt(limit));
-    
-    paramCount++;
-    query += ` OFFSET $${paramCount}`;
-    params.push(parseInt(offset));
+    params.push(parseInt(limit), parseInt(offset));
     
     const result = await pool.query(query, params);
     
+    // Get total count for pagination
+    const countQuery = `SELECT COUNT(*) FROM episodes`;
+    const countResult = await pool.query(countQuery);
+    const total = parseInt(countResult.rows[0].count);
+    
     res.json({
       episodes: result.rows,
-      total: result.rowCount,
+      total,
       page: Math.floor(offset / limit) + 1,
-      limit: parseInt(limit)
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / limit)
     });
-  } catch (err) {
-    console.error('Error fetching episodes:', err);
+  } catch (error) {
+    console.error('Error fetching episodes:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -151,8 +168,8 @@ app.get('/episodes/:id', async (req, res) => {
     
     const query = `
       SELECT e.*, 
-             STRING_AGG(DISTINCT se.element_name, ', ') as subjects,
-             STRING_AGG(DISTINCT c.color_name, ', ') as colors
+             ARRAY_AGG(DISTINCT se.element_name) as subject_elements,
+             ARRAY_AGG(DISTINCT c.color_name) as colors
       FROM episodes e
       LEFT JOIN episode_elements ee ON e.episode_id = ee.episode_id
       LEFT JOIN subject_elements se ON ee.element_id = se.element_id
@@ -169,39 +186,61 @@ app.get('/episodes/:id', async (req, res) => {
     }
     
     res.json(result.rows[0]);
-  } catch (err) {
-    console.error('Error fetching episode:', err);
+  } catch (error) {
+    console.error('Error fetching episode:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Search episodes by title
-app.get('/episodes/search', async (req, res) => {
+// Get episodes with specific subject (e.g., mountain)
+app.get('/subjects/:subject', async (req, res) => {
   try {
-    const { q, limit = 20 } = req.query;
-    
-    if (!q) {
-      return res.status(400).json({ error: 'Search query parameter "q" is required' });
-    }
+    const { subject } = req.params;
+    const { limit = 50, offset = 0 } = req.query;
     
     const query = `
-      SELECT e.episode_id, e.season, e.episode, e.episode_code, 
-             e.title, e.broadcast_date, e.img_src
+      SELECT DISTINCT e.episode_id, e.title, e.season, e.episode, e.episode_code, 
+             e.broadcast_date, e.painting_index, e.img_src, e.youtube_src, 
+             e.num_colors, e.special_guest,
+             ARRAY_AGG(DISTINCT se.element_name) as subject_elements,
+             ARRAY_AGG(DISTINCT c.color_name) as colors
       FROM episodes e
-      WHERE e.title ILIKE $1
+      JOIN episode_elements ee ON e.episode_id = ee.episode_id
+      JOIN subject_elements se ON ee.element_id = se.element_id
+      LEFT JOIN episode_colors ec ON e.episode_id = ec.episode_id
+      LEFT JOIN colors c ON ec.color_id = c.color_id
+      WHERE se.element_name ILIKE '%' || $1 || '%'
+      GROUP BY e.episode_id, e.title, e.season, e.episode, e.episode_code, 
+               e.broadcast_date, e.painting_index, e.img_src, e.youtube_src, 
+               e.num_colors, e.special_guest
       ORDER BY e.season, e.episode
-      LIMIT $2
+      LIMIT $2 OFFSET $3
     `;
     
-    const result = await pool.query(query, [`%${q}%`, parseInt(limit)]);
+    const result = await pool.query(query, [subject.toUpperCase(), limit, offset]);
+    
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(DISTINCT e.episode_id)
+      FROM episodes e
+      JOIN episode_elements ee ON e.episode_id = ee.episode_id
+      JOIN subject_elements se ON ee.element_id = se.element_id
+      WHERE se.element_name ILIKE '%' || $1 || '%'
+    `;
+    
+    const countResult = await pool.query(countQuery, [subject.toUpperCase()]);
+    const total = parseInt(countResult.rows[0].count);
     
     res.json({
+      subject: subject.toUpperCase(),
       episodes: result.rows,
-      total: result.rowCount,
-      query: q
+      total,
+      page: Math.floor(offset / limit) + 1,
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / limit)
     });
-  } catch (err) {
-    console.error('Error searching episodes:', err);
+  } catch (error) {
+    console.error('Error fetching subject episodes:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -210,66 +249,26 @@ app.get('/episodes/search', async (req, res) => {
 app.get('/subjects', async (req, res) => {
   try {
     const query = `
-      SELECT se.element_id, se.element_name, se.element_category,
-             COUNT(ee.episode_id) as episode_count
+      SELECT se.element_name, COUNT(ee.episode_id) as episode_count
       FROM subject_elements se
       LEFT JOIN episode_elements ee ON se.element_id = ee.element_id
-      GROUP BY se.element_id, se.element_name, se.element_category
-      ORDER BY se.element_category, se.element_name
+      GROUP BY se.element_id, se.element_name
+      ORDER BY se.element_name
     `;
     
     const result = await pool.query(query);
-    
-    res.json({
-      subjects: result.rows
-    });
-  } catch (err) {
-    console.error('Error fetching subjects:', err);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching subjects:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Get all mountain-related episodes (your original request)
-app.get('/subjects/mountain', async (req, res) => {
-  try {
-    const query = `
-      SELECT DISTINCT
-          e.episode_id,
-          e.season,
-          e.episode,
-          e.episode_code,
-          e.title,
-          e.broadcast_date,
-          e.img_src,
-          e.youtube_src,
-          STRING_AGG(se.element_name, ', ') as mountain_elements
-      FROM episodes e
-      JOIN episode_elements ee ON e.episode_id = ee.episode_id
-      JOIN subject_elements se ON ee.element_id = se.element_id
-      WHERE se.element_name ILIKE '%mountain%'
-      GROUP BY e.episode_id, e.season, e.episode, e.episode_code, e.title, e.broadcast_date, e.img_src, e.youtube_src
-      ORDER BY e.season, e.episode
-    `;
-    
-    const result = await pool.query(query);
-    
-    res.json({
-      episodes: result.rows,
-      total: result.rowCount,
-      message: 'All episodes featuring mountain subject matter'
-    });
-  } catch (err) {
-    console.error('Error fetching mountain episodes:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Get all paint colors
+// Get all colors
 app.get('/colors', async (req, res) => {
   try {
     const query = `
-      SELECT c.color_id, c.color_name, c.color_hex,
-             COUNT(ec.episode_id) as episode_count
+      SELECT c.color_name, c.color_hex, COUNT(ec.episode_id) as episode_count
       FROM colors c
       LEFT JOIN episode_colors ec ON c.color_id = ec.color_id
       GROUP BY c.color_id, c.color_name, c.color_hex
@@ -277,32 +276,70 @@ app.get('/colors', async (req, res) => {
     `;
     
     const result = await pool.query(query);
-    
-    res.json({
-      colors: result.rows
-    });
-  } catch (err) {
-    console.error('Error fetching colors:', err);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching colors:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Get database statistics
+// Search episodes
+app.get('/search', async (req, res) => {
+  try {
+    const { q, limit = 50, offset = 0 } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ error: 'Query parameter "q" is required' });
+    }
+    
+    const query = `
+      SELECT DISTINCT e.episode_id, e.title, e.season, e.episode, e.episode_code, 
+             e.broadcast_date, e.painting_index, e.img_src, e.youtube_src, 
+             e.num_colors, e.special_guest,
+             ARRAY_AGG(DISTINCT se.element_name) as subject_elements,
+             ARRAY_AGG(DISTINCT c.color_name) as colors
+      FROM episodes e
+      LEFT JOIN episode_elements ee ON e.episode_id = ee.episode_id
+      LEFT JOIN subject_elements se ON ee.element_id = se.element_id
+      LEFT JOIN episode_colors ec ON e.episode_id = ec.episode_id
+      LEFT JOIN colors c ON ec.color_id = c.color_id
+      WHERE e.title ILIKE '%' || $1 || '%' OR se.element_name ILIKE '%' || $1 || '%'
+      GROUP BY e.episode_id, e.title, e.season, e.episode, e.episode_code, 
+               e.broadcast_date, e.painting_index, e.img_src, e.youtube_src, 
+               e.num_colors, e.special_guest
+      ORDER BY e.season, e.episode
+      LIMIT $2 OFFSET $3
+    `;
+    
+    const result = await pool.query(query, [q, limit, offset]);
+    
+    res.json({
+      query: q,
+      episodes: result.rows,
+      total: result.rows.length
+    });
+  } catch (error) {
+    console.error('Error searching episodes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Database statistics
 app.get('/stats', async (req, res) => {
   try {
     const episodeCount = await pool.query('SELECT COUNT(*) FROM episodes');
-    const subjectCount = await pool.query('SELECT COUNT(*) FROM subject_elements');
     const colorCount = await pool.query('SELECT COUNT(*) FROM colors');
-    const relationshipCount = await pool.query('SELECT COUNT(*) FROM episode_elements');
+    const subjectCount = await pool.query('SELECT COUNT(*) FROM subject_elements');
+    const seasonCount = await pool.query('SELECT COUNT(DISTINCT season) FROM episodes');
     
     res.json({
-      total_episodes: parseInt(episodeCount.rows[0].count),
-      total_subjects: parseInt(subjectCount.rows[0].count),
-      total_colors: parseInt(colorCount.rows[0].count),
-      total_relationships: parseInt(relationshipCount.rows[0].count)
+      episodes: parseInt(episodeCount.rows[0].count),
+      colors: parseInt(colorCount.rows[0].count),
+      subjects: parseInt(subjectCount.rows[0].count),
+      seasons: parseInt(seasonCount.rows[0].count)
     });
-  } catch (err) {
-    console.error('Error fetching stats:', err);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -314,15 +351,16 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use('*', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`🎨 Joy of Painting API running on port ${port}`);
-  console.log(`📚 API documentation: http://localhost:${port}/`);
-  console.log(`🏔️  Mountain episodes: http://localhost:${port}/subjects/mountain`);
+app.listen(PORT, () => {
+  console.log(`🎨 Joy of Painting API running on port ${PORT}`);
+  console.log(`📖 API documentation: http://localhost:${PORT}/`);
+  console.log(`🏔️  Mountain episodes: http://localhost:${PORT}/subjects/mountain`);
+  console.log(`💊 Health check: http://localhost:${PORT}/health`);
 });
 
 module.exports = app;
